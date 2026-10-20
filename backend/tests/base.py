@@ -9,8 +9,9 @@ class BaseAPITestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
         
-        self.downtown = Store.objects.create(name="Downtown")
-        self.uptown = Store.objects.create(name="Uptown")
+       
+        self.city_center = Store.objects.create(name="City Center Branch")
+        self.airport = Store.objects.create(name="Airport Branch")
 
         User = get_user_model()
         self.admin = User.objects.create_user(username="admin_test", password="pw")
@@ -18,19 +19,20 @@ class BaseAPITestCase(TestCase):
         self.staff = User.objects.create_user(username="staff_test", password="pw")
         self.outsider = User.objects.create_user(username="outsider_test", password="pw")
 
-        # Admin has access both
-        StoreMembership.objects.create(user=self.admin, store=self.downtown, role="ADMIN")
-        StoreMembership.objects.create(user=self.admin, store=self.uptown, role="ADMIN")
         
-        # Manager and Staff only have access to Downtown
-        StoreMembership.objects.create(user=self.manager, store=self.downtown, role="MANAGER")
-        StoreMembership.objects.create(user=self.staff, store=self.downtown, role="STAFF")
+        StoreMembership.objects.create(user=self.admin, store=self.city_center, role="ADMIN")
+        StoreMembership.objects.create(user=self.admin, store=self.airport, role="ADMIN")
         
-        # Outsider has NO access to Downtown
+        # managor and staff have access to only City Center
+        StoreMembership.objects.create(user=self.manager, store=self.city_center, role="MANAGER")
+        StoreMembership.objects.create(user=self.staff, store=self.city_center, role="STAFF")
+        
+     
 
-        self.dt_product = Product.objects.create(
-            store=self.downtown, name="DT Item", sku="DT-1", price=10, cost_price=5
+        # renamed product variables
+        self.cc_product = Product.objects.create(
+            store=self.city_center, name="CC Item", sku="CC-1", price=10, cost_price=5
         )
-        self.ut_product = Product.objects.create(
-            store=self.uptown, name="UT Item", sku="UT-1", price=20, cost_price=10
+        self.ap_product = Product.objects.create(
+            store=self.airport, name="AP Item", sku="AP-1", price=20, cost_price=10
         )
