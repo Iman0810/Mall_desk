@@ -9,28 +9,57 @@ MallDesk is a simple multi-store retail management application. A business can o
 
 ## 🚀 Setup Instructions
 
-### 1. Database (Docker)
-Make sure Docker is running, then start the PostgreSQL container from the root directory:
+### 1. Database (optional)
+
+You have two options for the database.
+
+**Option A**: **SQLite (Easiest - No setup required)**
+Skip this step entirely. If you do not create a .env file, the backend will automatically fall back to using a local SQLite database. You can go straight to Step 2.
+
+
+**Option B**: **PostgreSQL (Docker)**
+
+If you have Docker installed and want to use Postgres:
+
+1.From the root directory(Copy the Docker environment file)
+```bash
+cp .env.example .env
+```
+2. Start the container
 ```bash
 docker compose up -d
 ```
-**(If you don't have Docker, skip this step. The backend will automatically fall back to using SQLite)**
-
 ### 2. Backend(Django)
 Open a terminal and navigate to the backend
 
 ```bash
 cd backend
-#for Mac/Linux
-python3 -m venv .venv   #for windows use python -m venv  .venv && to activate .venv\Scripts\activate
+```
+Create and activate a virtual environment:
+
+**Mac/Linux**
+```bash
+python3 -m venv .venv   
 source .venv/bin/activate
+```
+**Windows**
+```bash
+python -m venv .venv
+.venv\Scripts\activate
+```
+**Install dependencies:**
+```bash
 pip install -r requirements.txt
 ```
-create your .env file(copy the example)
+**Environment Variables:**
+
+If you chose Option B (Docker/Postgres) in Step 1, you must copy the backend environment file to connect Django to Postgres:
 ```bash
 cp .env.example .env
 ```
 Please Ensure the POSTGRES_PORT in .env matches the port in docker-compose.yml, which is 5433
+
+If you chose Option A (SQLite), do not create this file.
 
 #### Database Setup
 Because the database migration files are included in this repository, you do not need to run makemigrations. Just run:
@@ -64,7 +93,7 @@ All seeded users have the password: password123
 | `air_mgr` | Store Manager | ❌ No Access | `MANAGER` | ❌ No Access |
 | `west_mgr` | Store Manager | ❌ No Access | ❌ No Access | `MANAGER` |
 
-Creating New Users:
+**Creating New Users:**
 If you use the "Assign Staff" form in the UI to create a new user (e.g., peter.parker), the system will automatically generate their email (peter.parker@malldesk.com), assign them the default password password123, and add them to the branch.
 
 
@@ -79,13 +108,13 @@ python manage.py test tests
 ```
 ### Test Coverage:
 
-    1.Store Access (test_store_access.py): Proves users cannot view or change data for a store they are not assigned to.
+1.Store Access (test_store_access.py): Proves users cannot view or change data for a store they are not assigned to.
 
-    2.Role Permissions (test_role_permissions.py): Proves staff cannot create products, managers cannot assign users, and restricted actions return 403 Forbidden.
+2.Role Permissions (test_role_permissions.py): Proves staff cannot create products, managers cannot assign users, and restricted actions return 403 Forbidden.
 
-    3.Assistant Isolation (test_assistant_isolation.py): Proves the AI assistant only uses data from the active store and never leaks data from other branches.
+3.Assistant Isolation (test_assistant_isolation.py): Proves the AI assistant only uses data from the active store and never leaks data from other branches.
 
-    4.Combined Updates (test_combined_updates.py): Proves that if a Manager tries to update a product but includes a restricted field (like cost_price), the entire request is rejected (atomic transaction), ensuring no partial updates occur.
+4.Combined Updates (test_combined_updates.py): Proves that if a Manager tries to update a product but includes a restricted field (like cost_price), the entire request is rejected (atomic transaction), ensuring no partial updates occur.
 
 ### Security & Business Logic Implemented
 Store Isolation: Every API request checks the authenticated user's StoreMembership in the database before returning data. The frontend store ID is never trusted as proof of access.
@@ -95,3 +124,7 @@ Restricted Fields: cost_price and internal_notes are visible and editable only b
 Role Hierarchy: Managers can add new Staff, but cannot create Admins (enforced on both frontend and backend).
 
 Atomic Transactions: All POST and PATCH requests use @transaction.atomic to guarantee that invalid data never partially saves.
+
+
+### Production Note
+For the purpose of this assessment, the database uses local default credentials and newly created users are assigned a default password (`password123`). In a real production environment, these would be managed via secure secrets (e.g., AWS Secrets Manager) and new users would receive an email invite to set their own password.
