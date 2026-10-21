@@ -48,7 +48,7 @@ export default function Dashboard() {
               onClick={() => {
                 setActiveStoreId(store.id);
                 setActiveRole(store.role); // <-- Set the role
-                setActiveTab('products');  // <-- Optional: reset tab when switching branches
+                setActiveTab('products');  
               }}
               className={`p-4 rounded border font-bold transition-all ${
                 activeStoreId === store.id 

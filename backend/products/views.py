@@ -25,7 +25,6 @@ class ProductListCreateView(APIView):
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
 
-# ADD THIS CLASS BACK:
 class ProductDetailView(APIView):
     @transaction.atomic
     def patch(self, request, store_id, pk):

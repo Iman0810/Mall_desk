@@ -45,7 +45,7 @@ class StoreUserAssignView(APIView):
         if not username or not role:
             return Response({"error": "Username and role required"}, status=400)
             
-        # SECURITY CHECK 1: Managers cannot create Admins
+        # Managers cannot create Admins
         if role == "ADMIN" and membership.role != "ADMIN":
             return Response({"error": "Only Administrators can create other Admins."}, status=403)
             
@@ -53,7 +53,7 @@ class StoreUserAssignView(APIView):
         user = User.objects.filter(username=username).first()
         
         if user:
-            # SECURITY CHECK 2: Managers cannot steal/transfer users from other stores
+            # Managers cannot steal/transfer users from other stores
             existing_memberships = StoreMembership.objects.filter(user=user).exclude(store=store)
             if existing_memberships.exists() and membership.role != "ADMIN":
                 return Response(

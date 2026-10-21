@@ -23,7 +23,7 @@ export default function StoreUsers({ storeId, role }: { storeId: number, role: s
       setError('');
     },
     onError: (err: any) => {
-      // Show the specific backend error (e.g., "User already belongs to another branch")
+      // Show the specific backend error (e.g"User already belongs to another branch")
       const errorMsg = err.response?.data?.error || err.response?.data?.username?.[0] || 'Failed to assign user.';
       setError(errorMsg);
     }

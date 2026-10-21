@@ -45,7 +45,7 @@ export default function Products({ storeId, role }: { storeId: number, role: str
                 </p>
               </div>
 
-              {/* Add the Edit Button */}
+              
               {(role === 'ADMIN' || role === 'MANAGER') && (
                 <EditProduct product={p} storeId={storeId} role={role} />
               )}
