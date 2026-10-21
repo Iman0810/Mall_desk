@@ -6,6 +6,9 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ["id", "store", "name", "sku", "price", "stock", "cost_price", "internal_notes"]
+        extra_kwargs = {
+            'store': {'required': False}
+        }
 
     def validate(self, attrs):
         """

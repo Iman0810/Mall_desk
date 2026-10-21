@@ -8,6 +8,7 @@ from rest_framework.exceptions import PermissionDenied
 from accounts.permissions import require_role
 from .models import User, StoreMembership
 from .serializers import StoreMembershipSerializer
+from django.contrib.auth import get_user_model
 
 class LoginView(APIView):
     permission_classes = [AllowAny] # Anyone can attempt to log in
@@ -35,8 +36,8 @@ class StoreUserListView(APIView):
 
 class StoreUserAssignView(APIView):
     def post(self, request, store_id):
-        # ONLY Admin can assign users
-        store, _ = require_role(request.user, store_id, ["ADMIN"])
+        # Allow both Admin and Manager to assign users
+        store, membership = require_role(request.user, store_id, ["ADMIN", "MANAGER"])
         
         username = request.data.get("username")
         role = request.data.get("role")
@@ -44,13 +45,32 @@ class StoreUserAssignView(APIView):
         if not username or not role:
             return Response({"error": "Username and role required"}, status=400)
             
-        user = User.objects.filter(username=username).first()
-        if not user:
-            return Response({"error": "User not found"}, status=404)
+        # SECURITY CHECK: Managers cannot create Admins
+        if role == "ADMIN" and membership.role != "ADMIN":
+            return Response({"error": "Only Administrators can create other Admins."}, status=403)
             
-        # Create or update the membership
-        membership, created = StoreMembership.objects.update_or_create(
+        User = get_user_model()
+        user = User.objects.filter(username=username).first()
+        
+        if not user:
+            # Format the username into a first name, last name, and email
+            clean_name = username.replace('.', ' ').replace('_', ' ').title()
+            name_parts = clean_name.split()
+            first_name = name_parts[0] if name_parts else username
+            last_name = " ".join(name_parts[1:]) if len(name_parts) > 1 else "Employee"
+            
+            email = f"{username.lower()}@malldesk.com"
+
+            user = User.objects.create_user(
+                username=username, 
+                password="password123", # Default password
+                first_name=first_name,
+                last_name=last_name,
+                email=email
+            )
+            
+        store_membership, created = StoreMembership.objects.update_or_create(
             user=user, store=store,
             defaults={"role": role}
         )
-        return Response(StoreMembershipSerializer(membership).data, status=201 if created else 200)
+        return Response(StoreMembershipSerializer(store_membership).data, status=201 if created else 200)

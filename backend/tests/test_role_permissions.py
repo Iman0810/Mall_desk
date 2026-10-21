@@ -9,8 +9,8 @@ class RolePermissionTests(BaseAPITestCase):
         })
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_manager_cannot_assign_users(self):
-        self.client.force_authenticate(user=self.manager)
+    def test_staff_cannot_assign_users(self):
+        self.client.force_authenticate(user=self.staff)
         response = self.client.post(f"/api/stores/{self.city_center.id}/users/assign/", {
             "username": "outsider_test", "role": "STAFF"
         })

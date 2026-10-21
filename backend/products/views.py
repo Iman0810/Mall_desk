@@ -7,27 +7,28 @@ from .serializers import ProductSerializer
 
 class ProductListCreateView(APIView):
     def get(self, request, store_id):
-        # Validat3 store access
         store, _ = get_active_store(request.user, store_id)
         products = Product.objects.filter(store=store)
         serializer = ProductSerializer(products, many=True)
         return Response(serializer.data)
 
-    @transaction.atomic # 2. Atomic transaction prevents partial saves
+    @transaction.atomic
     def post(self, request, store_id):
-        # Only Admin and Manager can create
         store, membership = require_role(request.user, store_id, ["ADMIN", "MANAGER"])
         
+        if membership.role != "ADMIN" and ("cost_price" in request.data or "internal_notes" in request.data):
+            return Response({"error": "You do not have permission to set restricted fields."}, status=403)
+
         serializer = ProductSerializer(data=request.data, context={"request": request, "membership": membership})
         if serializer.is_valid():
             serializer.save(store=store)
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
 
+# ADD THIS CLASS BACK:
 class ProductDetailView(APIView):
     @transaction.atomic
     def patch(self, request, store_id, pk):
-        # Only Admin and Manager can update
         store, membership = require_role(request.user, store_id, ["ADMIN", "MANAGER"])
         
         product = Product.objects.filter(store=store, pk=pk).first()
