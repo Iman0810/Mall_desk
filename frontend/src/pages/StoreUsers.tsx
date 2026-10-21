@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/client';
-import { useAuth } from '../context/AuthContext';
 
 export default function StoreUsers({ storeId, role }: { storeId: number, role: string }) {
   const queryClient = useQueryClient();
@@ -24,7 +23,9 @@ export default function StoreUsers({ storeId, role }: { storeId: number, role: s
       setError('');
     },
     onError: (err: any) => {
-      setError(err.response?.data?.error || 'Failed to assign user. Check if username exists.');
+      // Show the specific backend error (e.g., "User already belongs to another branch")
+      const errorMsg = err.response?.data?.error || err.response?.data?.username?.[0] || 'Failed to assign user.';
+      setError(errorMsg);
     }
   });
 
@@ -40,23 +41,30 @@ export default function StoreUsers({ storeId, role }: { storeId: number, role: s
   return (
     <div className="mt-4 flex flex-col gap-8">
 
-      {/* Add User Form (Only visible to Admins and Managers) */}
+      {/* Grant Access Form (Only visible to Admins and Managers) */}
       {(role === 'ADMIN' || role === 'MANAGER') && (
         <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg border dark:border-gray-700">
-          <h4 className="font-bold text-gray-800 dark:text-gray-200 mb-3">Assign Staff to Branch</h4>
-          {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
+          <div className="mb-3">
+            <h4 className="font-bold text-gray-800 dark:text-gray-200">Grant Branch Access</h4>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Type a new username to create an account, or an existing username to grant them access to this specific branch.
+            </p>
+          </div>
+          
+          {error && <div className="text-red-500 text-sm mb-3 font-semibold">{error}</div>}
+          
           <form onSubmit={handleSubmit} className="flex gap-3">
             <input
               type="text"
               placeholder="Username (e.g., staff)"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="flex-1 p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="flex-1 p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <select
               value={newRole}
               onChange={(e) => setNewRole(e.target.value)}
-              className="p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="STAFF">Staff</option>
               <option value="MANAGER">Manager</option>
@@ -65,9 +73,9 @@ export default function StoreUsers({ storeId, role }: { storeId: number, role: s
             <button
               type="submit"
               disabled={assignMutation.isPending}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 font-bold"
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 font-bold transition-colors"
             >
-              {assignMutation.isPending ? 'Adding...' : 'Assign'}
+              {assignMutation.isPending ? 'Granting...' : 'Grant Access'}
             </button>
           </form>
         </div>
