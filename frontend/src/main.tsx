@@ -5,8 +5,19 @@ import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import App from './App'
 import './index.css'
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: (failureCount, error: any) => {
 
-const queryClient = new QueryClient()
+        if (error?.response?.status === 401 || error?.response?.status === 403) {
+          return false;
+        }
+        return failureCount < 2; 
+      },
+    },
+  },
+})
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
