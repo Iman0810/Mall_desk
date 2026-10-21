@@ -56,12 +56,13 @@ The app will be available at http://localhost:5173.
 ###  Demo Credentials
 All seeded users have the password: password123
 
-Username|Role	       | Downtown Flagship | Airport Terminal 2	| Westfield Mall
-admin	|Administrator | ADMIN	           |  ADMIN	            | ADMIN
-manager	|Store Manager | MANAGER	       |  ❌  No Access	   | ❌ No Access
-staff	|Staff Member  | STAFF	           |  ❌ No Access	   | ❌ No Access
-air_mgr	|Store Manager | ❌ No Access	  |  MANAGER	       | ❌ No Access
-west_mgr|Store Manager | ❌ No Access	  |  ❌ No Access	  | MANAGER
+| Username | Role | Downtown Flagship | Airport Terminal 2 | Westfield Mall |
+|---|---|---|---|---|
+| `admin` | Administrator | `ADMIN` | `ADMIN` | `ADMIN` |
+| `manager` | Store Manager | `MANAGER` | ❌ No Access | ❌ No Access |
+| `staff` | Staff Member | `STAFF` | ❌ No Access | ❌ No Access |
+| `air_mgr` | Store Manager | ❌ No Access | `MANAGER` | ❌ No Access |
+| `west_mgr` | Store Manager | ❌ No Access | ❌ No Access | `MANAGER` |
 
 Creating New Users:
 If you use the "Assign Staff" form in the UI to create a new user (e.g., peter.parker), the system will automatically generate their email (peter.parker@malldesk.com), assign them the default password password123, and add them to the branch.
