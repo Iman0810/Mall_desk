@@ -45,28 +45,34 @@ class StoreUserAssignView(APIView):
         if not username or not role:
             return Response({"error": "Username and role required"}, status=400)
             
-        # SECURITY CHECK: Managers cannot create Admins
+        # SECURITY CHECK 1: Managers cannot create Admins
         if role == "ADMIN" and membership.role != "ADMIN":
             return Response({"error": "Only Administrators can create other Admins."}, status=403)
             
         User = get_user_model()
         user = User.objects.filter(username=username).first()
         
-        if not user:
-            # Format the username into a first name, last name, and email
+        if user:
+            # SECURITY CHECK 2: Managers cannot steal/transfer users from other stores
+            existing_memberships = StoreMembership.objects.filter(user=user).exclude(store=store)
+            if existing_memberships.exists() and membership.role != "ADMIN":
+                return Response(
+                    {"error": f"User '{username}' already belongs to another branch. Only an Administrator can transfer them."}, 
+                    status=403
+                )
+        else:
+            # Create the user if they don't exist
             clean_name = username.replace('.', ' ').replace('_', ' ').title()
             name_parts = clean_name.split()
             first_name = name_parts[0] if name_parts else username
             last_name = " ".join(name_parts[1:]) if len(name_parts) > 1 else "Employee"
             
-            email = f"{username.lower()}@malldesk.com"
-
             user = User.objects.create_user(
                 username=username, 
-                password="password123", # Default password
+                password="password123",
                 first_name=first_name,
                 last_name=last_name,
-                email=email
+                email=f"{username.lower()}@malldesk.com"
             )
             
         store_membership, created = StoreMembership.objects.update_or_create(
